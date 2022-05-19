@@ -1,0 +1,52 @@
+---
+- name: Test the undeploy of the installed applications
+  hosts: localhost
+  vars:
+    jboss:
+      path: /home/alessio/Scaricati/jboss-eap-7.4
+      content:
+        path: /standalone/data/content
+  roles:
+    - undeploy
+  # tasks:
+  #   - name: Ensure the temporary directory
+  #     file:
+  #       path: '{{ temp.path }}'
+  #       state: directory
+    # - name: Find the deployed content
+    #   find:
+    #     paths:
+    #       - '{{ jboss.path + jboss.content.path }}'
+    #     patterns:
+    #       - content
+    #     recurse: yes
+    #   register: deployed_content
+    # - name: Initialize the content data
+    #   set_fact:
+    #     applications: []
+    #     contents: []
+    #     info: []
+    # - name: Collect the content data
+    #   set_fact:
+    #     contents: '{{ contents + [ { "file": item.path, "hash": item.path|replace(jboss.path + jboss.content.path, "")|replace("/content", "")|replace("/", "") } ] }}'
+    #   loop: '{{ deployed_content.files }}'
+    # - name: Extract the deployed application list
+    #   command:
+    #     cmd: '{{ jboss.path }}/bin/jboss-cli.sh --connect --command="deployment-info"'
+    #   register: jboss_output
+    # - name: Remove unnecessary entropy from results
+    #   set_fact:
+    #     applications: '{{ applications + [ item|regex_replace(" .*", "") ] }}'
+    #   loop: '{{ jboss_output.stdout_lines }}'
+    #   when: not item.startswith('NAME')
+    # - name: Extract the application details
+    #   command:
+    #     cmd: '{{ jboss.path }}/bin/jboss-cli.sh --connect --command="/deployment={{ item }}:read-attribute(name=content)" --output-json'
+    #   loop: '{{ applications }}'
+    #   register: details
+    # - name: Extract app hash
+    #   set_fact:
+    #     info: '{{ info + [ { "application": item.item, "hash": (item.stdout|from_json).result[0].hash.BYTES_VALUE|b64decode(encoding="latin1")|bytes } ] }}'
+    #   loop: '{{ details.results }}'
+    # - debug:
+    #     var: info

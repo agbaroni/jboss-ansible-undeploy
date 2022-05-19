@@ -1,0 +1,38 @@
+- name: Create the temporary directory
+  file:
+    path: '{{ temporary.path }}'
+    state: directory
+
+- name: Find the stored content
+  find:
+    paths:
+      - '{{ jboss.path + jboss.content.path }}'
+    patterns:
+      - content
+    recurse: yes
+  register: stored_content
+
+- name: Initialize the facts
+  set_fact:
+    applications: []
+    contents: []
+    info: []
+
+- name: Collect the content data
+  set_fact:
+    contents: '{{ contents + [ { "file": item.path, "hash": item.path|replace(jboss.path + jboss.content.path, "")|replace("/content", "")|replace("/", "") } ] }}'
+  loop: '{{ stored_content.files }}'
+
+- name: Extract the deployed application list
+  command:
+    cmd: '{{ jboss.path }}/bin/jboss-cli.sh --connect --commands="cd /deployment,ls -l"'
+  register: deployed_applications
+
+- name: Extract the application details
+  command:
+    cmd: '{{ jboss.path }}/bin/jboss-cli.sh --connect --command="/deployment={{ item }}:read-attribute(name=content)" --output-json'
+  loop: '{{ deployed_applications.stdout_lines }}'
+  register: application_details
+
+- debug:
+    var: application_details
